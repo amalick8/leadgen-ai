@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { getSupabaseAdminClient } from "@/lib/supabase/server";
+import { getServerEnv } from "@/lib/env";
 import { leadSubmissionSchema } from "@/lib/validation/schemas";
 import { calculateLeadScore, calculateUrgency, createDuplicateKey, normalizeCity, normalizeZip } from "@/lib/leads/utils";
 import type { Service } from "@/types/database";
@@ -14,6 +15,9 @@ function formValue(formData: FormData, key: string) {
 }
 
 export async function getActiveServices(): Promise<Service[]> {
+  const { supabaseUrl, supabaseServiceRoleKey } = getServerEnv();
+  if (!supabaseUrl || !supabaseServiceRoleKey) return [];
+
   try {
     const supabase = getSupabaseAdminClient();
     const { data, error } = await supabase.from("services").select("*").eq("active", true).order("name");
@@ -45,6 +49,14 @@ export async function submitLead(_prev: ActionState, formData: FormData): Promis
   }
 
   try {
+    const { supabaseUrl, supabaseServiceRoleKey } = getServerEnv();
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      return {
+        success: false,
+        error: "LeadFlow AI is almost ready. Add the Supabase URL and service role key to enable live request matching.",
+      };
+    }
+
     const supabase = getSupabaseAdminClient();
     const serviceQuery = supabase.from("services").select("*").eq("active", true).limit(1);
     const { data: service, error: serviceError } = parsed.data.serviceId
