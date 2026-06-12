@@ -1,8 +1,10 @@
 import Link from "next/link";
+import Image from "next/image";
 import { LockKeyhole, ShieldCheck, Sparkles } from "lucide-react";
 import { LoginForm } from "@/components/forms/auth-forms";
 import { Card } from "@/components/ui/card";
 import { Navbar } from "@/components/marketing/nav";
+import authDashboardHero from "../auth-dashboard-hero.png";
 
 export default function LoginPage() {
   return (
@@ -26,6 +28,13 @@ export default function LoginPage() {
                   {item}
                 </div>
               ))}
+            </div>
+            <div className="mt-8 hidden rounded-[1.5rem] border border-slate-200 bg-white p-2 shadow-xl shadow-slate-950/10 md:block">
+              <Image
+                src={authDashboardHero}
+                alt="Secure LeadFlow AI admin and contractor dashboard"
+                className="aspect-[16/10] w-full rounded-[1.1rem] object-cover"
+              />
             </div>
           </div>
           <Card className="rounded-[1.75rem] p-6 shadow-2xl shadow-slate-950/10">

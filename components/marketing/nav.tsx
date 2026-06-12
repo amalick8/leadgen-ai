@@ -5,7 +5,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="text-lg font-black tracking-tight text-slate-950">LeadFlow <span className="text-indigo-600">AI</span></Link>
+        <Link href="/services" className="text-lg font-black tracking-tight text-slate-950">LeadFlow <span className="text-indigo-600">AI</span></Link>
         <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-600 md:flex">
           <Link href="/services">Services</Link>
           <Link href="/contractors">Contractors</Link>

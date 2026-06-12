@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { ArrowRight, CheckCircle2, Clock3, ShieldCheck, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Footer, Navbar } from "@/components/marketing/nav";
 import { SectionWrapper } from "@/components/marketing/section";
 import { getActiveServices } from "@/lib/actions/public";
+import servicesMarketplaceHero from "./services-marketplace-hero.png";
 
 export const metadata: Metadata = {
   title: "Services | LeadFlow AI",
@@ -32,8 +34,8 @@ export default async function ServicesPage() {
       <main className="bg-slate-50">
         <section className="relative overflow-hidden bg-white">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,#dbeafe_0,transparent_32%),radial-gradient(circle_at_85%_10%,#ccfbf1_0,transparent_25%)]" />
-          <SectionWrapper className="relative py-16 sm:py-20">
-            <div className="max-w-3xl">
+          <SectionWrapper className="relative grid gap-10 py-16 sm:py-20 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+            <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-sm font-bold text-indigo-700">
                 <Sparkles size={16} /> Service request categories
               </div>
@@ -48,6 +50,14 @@ export default async function ServicesPage() {
                   </span>
                 ))}
               </div>
+            </div>
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-950/10">
+              <Image
+                src={servicesMarketplaceHero}
+                alt="Home service categories matched with trusted local professionals"
+                priority
+                className="aspect-[16/10] w-full rounded-[1.45rem] object-cover"
+              />
             </div>
           </SectionWrapper>
         </section>

@@ -1,17 +1,23 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   BadgeCheck,
+  CalendarClock,
+  Camera,
   CheckCircle2,
   Gift,
   HeartHandshake,
+  Home,
   Loader2,
   LockKeyhole,
   MapPin,
   Send,
   ShieldCheck,
+  Sparkles,
+  WalletCards,
 } from "lucide-react";
 import { submitLead, type ActionState } from "@/lib/actions/public";
 import { Button } from "@/components/ui/button";
@@ -27,18 +33,62 @@ const trustItems = [
 ];
 
 const previewServices = [
-  { name: "AC Repair", slug: "ac-repair" },
-  { name: "Plumbing", slug: "plumbing" },
-  { name: "Roofing", slug: "roofing" },
-  { name: "Electrical", slug: "emergency-electrician" },
-  { name: "Landscaping", slug: "landscaping" },
-  { name: "Garage Door Repair", slug: "garage-door-repair" },
+  { id: "ac-repair", name: "AC Repair", slug: "ac-repair" },
+  { id: "plumbing", name: "Plumbing", slug: "plumbing" },
+  { id: "roofing", name: "Roofing", slug: "roofing" },
+  { id: "emergency-electrician", name: "Electrical", slug: "emergency-electrician" },
+  { id: "landscaping", name: "Landscaping", slug: "landscaping" },
+  { id: "garage-door-repair", name: "Garage Door Repair", slug: "garage-door-repair" },
 ];
+
+const servicePrompts: Record<string, { title: string; helper: string; placeholder: string }> = {
+  "ac-repair": {
+    title: "A few AC details help pros move fast.",
+    helper: "Mention cooling/heating issue, unit age if known, and whether it is urgent.",
+    placeholder: "Example: AC is blowing warm air, unit is about 8 years old, thermostat is set to 72, hoping for same-day help.",
+  },
+  plumbing: {
+    title: "Tell plumbers what they are walking into.",
+    helper: "Mention leaks, clogs, water shutoff, fixture type, and urgency.",
+    placeholder: "Example: Kitchen sink is backing up and dripping under the cabinet. Water is currently turned off.",
+  },
+  roofing: {
+    title: "Roofing pros need the visible symptoms.",
+    helper: "Mention leak location, storm damage, roof age if known, and access notes.",
+    placeholder: "Example: Water spot near upstairs bedroom after rain, roof is around 12 years old, need inspection this week.",
+  },
+  "emergency-electrician": {
+    title: "Electrical safety details matter.",
+    helper: "Mention outage area, breaker behavior, burning smells, sparks, or recent changes.",
+    placeholder: "Example: Breaker trips when the dryer runs. No burning smell, but the panel feels warm.",
+  },
+  landscaping: {
+    title: "Give landscapers the project shape.",
+    helper: "Mention yard size, cleanup, recurring service, planting, irrigation, or hardscape needs.",
+    placeholder: "Example: Need front yard cleanup, hedge trimming, and recurring biweekly lawn care quote.",
+  },
+  "garage-door-repair": {
+    title: "Garage door details help diagnose the fix.",
+    helper: "Mention spring, opener, track, noise, stuck-open/stuck-closed, and door size if known.",
+    placeholder: "Example: Door is stuck halfway and opener hums. Two-car garage, likely spring issue.",
+  },
+};
+
+function servicePrompt(slug?: string) {
+  return slug ? servicePrompts[slug] : undefined;
+}
 
 export function LeadForm({ services, selectedSlug, sourcePage }: { services: Service[]; selectedSlug?: string; sourcePage?: string }) {
   const [state, action, pending] = useActionState(submitLead, initial);
-  const selected = services.find((service) => service.slug === selectedSlug);
   const hasLiveServices = services.length > 0;
+  const selected = services.find((service) => service.slug === selectedSlug);
+  const availableServices = useMemo(
+    () => (hasLiveServices ? services.map((service) => ({ id: service.id, name: service.name, slug: service.slug })) : previewServices),
+    [hasLiveServices, services],
+  );
+  const [selectedValue, setSelectedValue] = useState(selected ? selected.id : "");
+  const activeService = selected ?? availableServices.find((service) => service.id === selectedValue || service.slug === selectedValue);
+  const activePrompt = servicePrompt(activeService?.slug);
 
   return (
     <form
@@ -50,9 +100,13 @@ export function LeadForm({ services, selectedSlug, sourcePage }: { services: Ser
 
       <div className="rounded-2xl border border-indigo-100 bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-4">
         <div className="flex items-start gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-indigo-600 shadow-sm">
-            <Gift size={22} />
-          </span>
+          <motion.span
+            animate={{ y: [0, -9, 0], rotate: [0, -2, 2, 0] }}
+            transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white text-indigo-600 shadow-lg shadow-indigo-500/15"
+          >
+            <Gift size={24} />
+          </motion.span>
           <div>
             <p className="text-sm font-black uppercase tracking-[0.16em] text-indigo-700">Launch treat</p>
             <h2 className="mt-1 text-xl font-black tracking-tight text-slate-950">Matched homeowners are eligible for a $10 Amazon.com Gift Card.</h2>
@@ -64,7 +118,7 @@ export function LeadForm({ services, selectedSlug, sourcePage }: { services: Ser
       </div>
 
       <div className="mt-5 flex flex-wrap gap-2">
-        {["1 minute", "Free request", "Local pros"].map((item) => (
+        {["Fast intake", "Free request", "Local pros"].map((item) => (
           <span key={item} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-black text-slate-700">
             <CheckCircle2 className="text-emerald-500" size={14} />
             {item}
@@ -82,39 +136,61 @@ export function LeadForm({ services, selectedSlug, sourcePage }: { services: Ser
 
       <div className="mt-5 grid gap-4">
         {selected ? (
-          <input type="hidden" name="serviceSlug" value={selected.slug} />
+          <>
+            <input type="hidden" name="serviceSlug" value={selected.slug} />
+            <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+              <div className="flex items-center gap-3">
+                <BadgeCheck className="text-emerald-600" size={20} />
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-700">Selected service</p>
+                  <p className="text-sm font-black text-slate-950">{selected.name}</p>
+                </div>
+              </div>
+            </div>
+          </>
         ) : (
           <Field label="What do you need help with?" error={state.fieldErrors?.serviceId?.[0]}>
-            <Select name={hasLiveServices ? "serviceId" : "serviceSlug"} defaultValue="" disabled={pending} required>
+            <Select
+              name={hasLiveServices ? "serviceId" : "serviceSlug"}
+              value={selectedValue}
+              onChange={(event) => setSelectedValue(event.target.value)}
+              disabled={pending}
+              required
+            >
               <option value="" disabled>
                 Choose a service
               </option>
-              {hasLiveServices
-                ? services.map((service) => (
-                    <option key={service.id} value={service.id}>
-                      {service.name}
-                    </option>
-                  ))
-                : previewServices.map((service) => (
-                    <option key={service.slug} value={service.slug}>
-                      {service.name}
-                    </option>
-                  ))}
+              {availableServices.map((service) => (
+                <option key={service.id} value={service.id}>
+                  {service.name}
+                </option>
+              ))}
             </Select>
           </Field>
         )}
 
-        {selected ? (
-          <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
-            <div className="flex items-center gap-3">
-              <BadgeCheck className="text-emerald-600" size={20} />
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.16em] text-emerald-700">Selected service</p>
-                <p className="text-sm font-black text-slate-950">{selected.name}</p>
+        <AnimatePresence>
+          {activePrompt ? (
+            <motion.div
+              key={activeService?.slug}
+              initial={{ opacity: 0, y: -8, height: 0 }}
+              animate={{ opacity: 1, y: 0, height: "auto" }}
+              exit={{ opacity: 0, y: -8, height: 0 }}
+              transition={{ duration: 0.24 }}
+              className="overflow-hidden"
+            >
+              <div className="rounded-2xl border border-cyan-100 bg-cyan-50/70 p-4">
+                <div className="flex items-start gap-3">
+                  <Sparkles className="mt-0.5 shrink-0 text-cyan-700" size={19} />
+                  <div>
+                    <p className="font-black text-slate-950">{activePrompt.title}</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">{activePrompt.helper}</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        ) : null}
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Your name" error={state.fieldErrors?.name?.[0]}>
@@ -138,22 +214,91 @@ export function LeadForm({ services, selectedSlug, sourcePage }: { services: Ser
           </Field>
         </div>
 
-        <Field label="Best way to reach you" error={state.fieldErrors?.contactPreference?.[0]}>
-          <Select name="contactPreference" defaultValue="both" disabled={pending}>
-            <option value="both">Phone or email</option>
-            <option value="phone">Phone</option>
-            <option value="email">Email</option>
-          </Select>
-        </Field>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Timeline">
+            <Select name="timeline" defaultValue="asap" disabled={pending}>
+              <option value="asap">As soon as possible</option>
+              <option value="today">Today</option>
+              <option value="this-week">This week</option>
+              <option value="planning">Planning / quote only</option>
+            </Select>
+          </Field>
+          <Field label="Property type">
+            <Select name="propertyType" defaultValue="single-family" disabled={pending}>
+              <option value="single-family">Single-family home</option>
+              <option value="townhome">Townhome</option>
+              <option value="condo">Condo / apartment</option>
+              <option value="commercial">Commercial property</option>
+            </Select>
+          </Field>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Budget range">
+            <Select name="budgetRange" defaultValue="not-sure" disabled={pending}>
+              <option value="not-sure">Not sure yet</option>
+              <option value="under-250">Under $250</option>
+              <option value="250-1000">$250 - $1,000</option>
+              <option value="1000-plus">$1,000+</option>
+            </Select>
+          </Field>
+          <Field label="Best way to reach you" error={state.fieldErrors?.contactPreference?.[0]}>
+            <Select name="contactPreference" defaultValue="both" disabled={pending}>
+              <option value="both">Phone or email</option>
+              <option value="phone">Phone</option>
+              <option value="email">Email</option>
+            </Select>
+          </Field>
+        </div>
 
         <Field label="What is going on?" error={state.fieldErrors?.description?.[0]}>
           <Textarea
             name="description"
-            placeholder="Example: AC stopped cooling this afternoon. Looking for someone who can come today or tomorrow."
+            placeholder={activePrompt?.placeholder ?? "Example: Tell us what happened, when you need help, and anything the pro should know before reaching out."}
             disabled={pending}
             required
           />
         </Field>
+
+        <AnimatePresence>
+          {activeService ? (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Field label={`Extra ${activeService.name.toLowerCase()} details`}>
+                <Textarea
+                  name="serviceSpecificDetails"
+                  placeholder="Optional: model numbers, access notes, safety concerns, preferred appointment window, or anything that helps the pro prepare."
+                  disabled={pending}
+                  className="min-h-24"
+                />
+              </Field>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold leading-6 text-slate-700">
+            <input name="hasExactAddress" type="checkbox" className="mt-1 h-4 w-4 rounded border-slate-300" disabled={pending} />
+            <Home className="mt-0.5 shrink-0 text-indigo-600" size={17} />
+            <span>I can provide exact address after match</span>
+          </label>
+          <label className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm font-semibold leading-6 text-slate-700">
+            <input name="hasPhotos" type="checkbox" className="mt-1 h-4 w-4 rounded border-slate-300" disabled={pending} />
+            <Camera className="mt-0.5 shrink-0 text-indigo-600" size={17} />
+            <span>I have photos or video available</span>
+          </label>
+        </div>
+
+        <div className="rounded-2xl border border-indigo-100 bg-indigo-50/70 p-4">
+          <div className="flex items-center gap-3">
+            <CalendarClock className="text-indigo-600" size={20} />
+            <p className="text-sm font-bold leading-6 text-slate-700">Better details help pros quote faster and make your gift-card eligible match easier to confirm.</p>
+          </div>
+        </div>
 
         <label className="flex gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-600">
           <input name="consentToShare" type="checkbox" className="mt-1 h-4 w-4 rounded border-slate-300" disabled={pending} required />
@@ -182,8 +327,16 @@ export function LeadForm({ services, selectedSlug, sourcePage }: { services: Ser
             </div>
           );
         })}
-        <div className="mt-1 flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-bold text-white">
-          <HeartHandshake className="text-cyan-200" size={18} />
+        <motion.div
+          animate={{ scale: [1, 1.015, 1] }}
+          transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+          className="mt-1 flex items-center gap-2 rounded-2xl bg-slate-950 px-4 py-3 text-sm font-bold text-white"
+        >
+          <WalletCards className="text-cyan-200" size={18} />
+          Amazon.com Gift Card eligibility is tracked after a verified match.
+        </motion.div>
+        <div className="flex items-center gap-2 rounded-2xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700">
+          <HeartHandshake className="text-indigo-600" size={18} />
           No spammy directory blast. Just matched local professionals.
         </div>
       </div>

@@ -1,7 +1,9 @@
+import Image from "next/image";
 import { BadgeCheck, BriefcaseBusiness, CreditCard, MapPinned } from "lucide-react";
 import { SignupForm } from "@/components/forms/auth-forms";
 import { Card } from "@/components/ui/card";
 import { Navbar } from "@/components/marketing/nav";
+import authDashboardHero from "../auth-dashboard-hero.png";
 
 export default function SignupPage() {
   return (
@@ -32,6 +34,13 @@ export default function SignupPage() {
                   </div>
                 );
               })}
+            </div>
+            <div className="mt-8 hidden rounded-[1.5rem] border border-slate-200 bg-white p-2 shadow-xl shadow-slate-950/10 md:block">
+              <Image
+                src={authDashboardHero}
+                alt="LeadFlow AI contractor dashboard, payments, and marketplace analytics"
+                className="aspect-[16/10] w-full rounded-[1.1rem] object-cover"
+              />
             </div>
           </div>
           <Card className="rounded-[1.75rem] p-6 shadow-2xl shadow-slate-950/10">

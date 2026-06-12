@@ -14,6 +14,29 @@ function formValue(formData: FormData, key: string) {
   return typeof value === "string" ? value : undefined;
 }
 
+function checkedValue(formData: FormData, key: string) {
+  return formData.get(key) === "on";
+}
+
+function buildProjectDescription(formData: FormData, description: string) {
+  const details = [
+    ["Timeline", formValue(formData, "timeline")],
+    ["Property type", formValue(formData, "propertyType")],
+    ["Budget range", formValue(formData, "budgetRange")],
+    ["Address available", checkedValue(formData, "hasExactAddress") ? "Yes" : undefined],
+    ["Photos available", checkedValue(formData, "hasPhotos") ? "Yes" : undefined],
+    ["Service-specific details", formValue(formData, "serviceSpecificDetails")],
+  ].filter(([, value]) => value);
+
+  if (!details.length) return description;
+  return [
+    description,
+    "",
+    "Structured intake details:",
+    ...details.map(([label, value]) => `- ${label}: ${value}`),
+  ].join("\n");
+}
+
 export async function getActiveServices(): Promise<Service[]> {
   const { supabaseUrl, supabaseServiceRoleKey } = getServerEnv();
   if (!supabaseUrl || !supabaseServiceRoleKey) return [];
@@ -83,12 +106,13 @@ export async function submitLead(_prev: ActionState, formData: FormData): Promis
     if (!duplicate) {
       const city = normalizeCity(parsed.data.city);
       const zipCode = normalizeZip(parsed.data.zipCode);
+      const projectDescription = buildProjectDescription(formData, parsed.data.description);
       const leadScore = calculateLeadScore({
         phone: parsed.data.phone,
         email: parsed.data.email,
         city,
         zipCode,
-        description: parsed.data.description,
+        description: projectDescription,
         contactPreference: parsed.data.contactPreference,
         serviceName: service.name,
         serviceSlug: service.slug,
@@ -103,7 +127,7 @@ export async function submitLead(_prev: ActionState, formData: FormData): Promis
           email: parsed.data.email || null,
           city,
           zip_code: zipCode,
-          description: parsed.data.description,
+          description: projectDescription,
           contact_preference: parsed.data.contactPreference,
           consent_to_share: true,
           status: "new",
@@ -117,7 +141,16 @@ export async function submitLead(_prev: ActionState, formData: FormData): Promis
         .select("id")
         .single();
       if (insertError) throw insertError;
-      await supabase.from("lead_events").insert({ lead_id: lead.id, event_type: "lead_submitted", message: "Lead submitted from public form" });
+      await supabase.from("lead_events").insert({
+        lead_id: lead.id,
+        event_type: "lead_submitted",
+        message: "Lead submitted from public form",
+        metadata: {
+          incentive: "amazon_gift_card",
+          incentive_amount_cents: 1000,
+          incentive_status: "eligible_after_verified_match",
+        },
+      });
     }
   } catch (error) {
     console.error("submitLead failed", error);

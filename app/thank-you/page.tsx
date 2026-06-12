@@ -1,7 +1,9 @@
+import Image from "next/image";
 import { ArrowRight, CheckCircle2, Gift, MessageSquareText, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Footer, Navbar } from "@/components/marketing/nav";
+import thankYouGiftHero from "./thank-you-gift-hero.png";
 
 export default function ThankYouPage() {
   return (
@@ -23,7 +25,16 @@ export default function ThankYouPage() {
               <Button href="/" variant="secondary">Back home</Button>
             </div>
           </div>
-          <Card className="rounded-[1.75rem] p-6 shadow-2xl shadow-slate-950/10">
+          <div>
+            <div className="mb-5 rounded-[1.5rem] border border-slate-200 bg-white p-2 shadow-xl shadow-slate-950/10">
+              <Image
+                src={thankYouGiftHero}
+                alt="Happy homeowner matched with a local professional and gift card reward"
+                priority
+                className="aspect-[16/10] w-full rounded-[1.1rem] object-cover"
+              />
+            </div>
+            <Card className="rounded-[1.75rem] p-6 shadow-2xl shadow-slate-950/10">
             <h2 className="text-2xl font-black text-slate-950">What happens next</h2>
             <div className="mt-5 grid gap-4">
               {[
@@ -45,7 +56,8 @@ export default function ThankYouPage() {
                 );
               })}
             </div>
-          </Card>
+            </Card>
+          </div>
         </div>
       </main>
       <Footer />
