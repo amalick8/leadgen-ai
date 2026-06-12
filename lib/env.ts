@@ -4,6 +4,8 @@ const serverOnly = [
   "STRIPE_WEBHOOK_SECRET",
   "RESEND_API_KEY",
   "OPENAI_API_KEY",
+  "ADMIN_BOOTSTRAP_SECRET",
+  "ADMIN_BOOTSTRAP_PASSWORD",
 ] as const;
 
 export type RequiredEnvName =
@@ -33,6 +35,9 @@ export function getServerEnv() {
     openAiApiKey: process.env.OPENAI_API_KEY,
     openAiLeadScoringModel: process.env.OPENAI_LEAD_SCORING_MODEL ?? "gpt-5.4-nano",
     defaultCurrency: process.env.DEFAULT_CURRENCY ?? "usd",
+    adminBootstrapEmail: process.env.ADMIN_BOOTSTRAP_EMAIL,
+    adminBootstrapPassword: process.env.ADMIN_BOOTSTRAP_PASSWORD,
+    adminBootstrapSecret: process.env.ADMIN_BOOTSTRAP_SECRET,
   };
 }
 
