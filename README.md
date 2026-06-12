@@ -54,6 +54,9 @@ Optional:
 - `OPENAI_API_KEY`
 - `OPENAI_LEAD_SCORING_MODEL`
 - `DEFAULT_CURRENCY`
+- `ADMIN_BOOTSTRAP_EMAIL`
+- `ADMIN_BOOTSTRAP_PASSWORD`
+- `ADMIN_BOOTSTRAP_SECRET`
 
 Server-only keys are only read in server modules. Do not prefix secret keys with `NEXT_PUBLIC_`.
 
@@ -77,6 +80,22 @@ If your SQL editor does not support `\i`, paste the file contents directly.
 
 ## Admin Creation
 
+Option A, recommended for first deployment:
+
+1. Set `ADMIN_BOOTSTRAP_EMAIL`, `ADMIN_BOOTSTRAP_PASSWORD`, and a long random `ADMIN_BOOTSTRAP_SECRET`.
+2. Deploy or restart the app.
+3. Run:
+
+```bash
+curl -X POST "$NEXT_PUBLIC_APP_URL/api/admin/bootstrap" \
+  -H "x-bootstrap-secret: $ADMIN_BOOTSTRAP_SECRET"
+```
+
+4. Log in at `/login` with `ADMIN_BOOTSTRAP_EMAIL` and `ADMIN_BOOTSTRAP_PASSWORD`.
+5. Remove the `ADMIN_BOOTSTRAP_*` environment variables after the first admin is created.
+
+Option B, manual SQL:
+
 1. Sign up through `/signup`.
 2. In Supabase SQL editor, promote that profile:
 
@@ -87,6 +106,26 @@ where email = 'you@example.com';
 ```
 
 Then log in again and visit `/admin`.
+
+## 48-Hour Deployment Checklist
+
+Day 1:
+
+- Create Supabase project and run `supabase/migrations/0001_initial.sql`.
+- Run `supabase/seed.sql`.
+- Add Supabase, Stripe test, and app URL env vars.
+- Use `/api/admin/bootstrap` to create the first admin, then remove bootstrap env vars.
+- Create a contractor account, complete onboarding, and confirm matching leads appear.
+- Submit at least one homeowner request from `/`.
+
+Day 2:
+
+- Configure Stripe webhook and run one test Checkout purchase.
+- Confirm purchased lead contact details unlock in `/business/my-leads`.
+- Promote/restrict admin users and review `/admin` screens.
+- Replace legal placeholder copy with reviewed Privacy/Terms.
+- Add rate limiting or bot protection before public traffic.
+- Deploy to the production host, set production Supabase/Stripe env vars, and smoke-test `/`, `/signup`, `/login`, `/admin`, `/business/leads`, and Stripe webhook delivery.
 
 ## Stripe Setup
 
