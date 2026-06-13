@@ -22,6 +22,30 @@ html {
   scroll-behavior: smooth;
 }
 
+#lead-form {
+  scroll-margin-top: 5.5rem;
+}
+
+a,
+button,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  button svg,
+  a svg {
+    transition: transform 220ms ease;
+  }
+
+  button:hover svg,
+  a:hover svg {
+    transform: translateX(1px);
+  }
+}
+
 ::selection {
   background: #c7d2fe;
   color: #0f172a;

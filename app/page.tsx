@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { LeadForm } from "@/components/forms/lead-form";
 import { Footer, Navbar } from "@/components/marketing/nav";
+import { HashScroller } from "@/components/marketing/hash-scroller";
 import { SectionWrapper } from "@/components/marketing/section";
 import { getActiveServices } from "@/lib/actions/public";
+import formCompanionWaving from "./form-companion-waving.png";
 import homeownerMarketplaceHero from "./homeowner-marketplace-hero.png";
 
 const cities = ["Dallas", "Fort Worth", "Arlington", "Plano", "Irving", "Frisco", "Richardson", "Garland"];
@@ -19,7 +21,8 @@ const serviceExamples = [
   { name: "Garage Door", description: "Broken springs, opener issues, off-track doors, and safety inspections.", slug: "garage-door-repair" },
 ];
 
-export default async function Home() {
+export default async function Home({ searchParams }: { searchParams?: Promise<{ service?: string }> }) {
+  const selectedServiceSlug = (await searchParams)?.service;
   const services = await getActiveServices();
   const displayedServices = services.length
     ? services.slice(0, 6).map((service) => ({ name: service.name, description: service.description, slug: service.slug }))
@@ -28,18 +31,19 @@ export default async function Home() {
   return (
     <>
       <Navbar />
+      <HashScroller />
       <main className="overflow-hidden">
         <section className="relative bg-white">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_10%,#dbeafe_0,transparent_32%),radial-gradient(circle_at_90%_12%,#ccfbf1_0,transparent_28%),linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)]" />
-          <div className="relative mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:px-8">
+          <div className="relative mx-auto grid max-w-7xl gap-8 px-4 py-8 sm:px-6 sm:py-12 lg:grid-cols-[0.92fr_1.08fr] lg:items-start lg:px-8">
             <div>
-              <div className="mb-5 inline-flex w-fit items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-sm font-bold text-indigo-700">
+              <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-sm font-bold text-indigo-700">
                 <Sparkles size={16} /> Local marketplace OS
               </div>
               <h1 className="max-w-4xl text-4xl font-black tracking-tight text-slate-950 sm:text-6xl">
                 Get matched with trusted local pros without the callback circus.
               </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+              <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-600">
                 Submit one clean project request. LeadFlow AI routes it to qualified contractors who serve your area, understand the job, and can reach out with real next steps.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -83,7 +87,7 @@ export default async function Home() {
           </div>
         </section>
 
-        <SectionWrapper className="grid gap-10 py-16 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
+        <SectionWrapper className="grid gap-10 py-16 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
           <div>
             <p className="text-sm font-black uppercase tracking-[0.22em] text-indigo-600">Start here</p>
             <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">Tell us once. We route the request cleanly.</h2>
@@ -98,8 +102,15 @@ export default async function Home() {
                 </div>
               ))}
             </div>
+            <div className="mt-8 hidden rounded-[1.75rem] border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-950/10 lg:block">
+              <Image
+                src={formCompanionWaving}
+                alt="Happy homeowner waving next to LeadFlow AI request form and gift card reward"
+                className="aspect-[4/5] max-h-[560px] w-full rounded-[1.35rem] object-cover object-top"
+              />
+            </div>
           </div>
-          <LeadForm services={services} sourcePage="/" />
+          <LeadForm services={services} selectedSlug={selectedServiceSlug} sourcePage="/" />
         </SectionWrapper>
 
         <section className="bg-white">
@@ -117,7 +128,7 @@ export default async function Home() {
                   <ShieldCheck className="text-indigo-600" />
                   <h3 className="mt-4 text-xl font-black">{service.name}</h3>
                   <p className="mt-2 min-h-16 text-sm leading-6 text-slate-600">{service.description}</p>
-                  <a className="mt-4 inline-flex items-center gap-2 text-sm font-black text-indigo-600" href={services.length ? `/services/${service.slug}` : "#lead-form"}>
+                  <a className="mt-4 inline-flex items-center gap-2 text-sm font-black text-indigo-600" href={`/?service=${service.slug}#lead-form`}>
                     Request {service.name} <ArrowRight size={16} />
                   </a>
                 </Card>

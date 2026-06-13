@@ -81,11 +81,11 @@ function servicePrompt(slug?: string) {
 export function LeadForm({ services, selectedSlug, sourcePage }: { services: Service[]; selectedSlug?: string; sourcePage?: string }) {
   const [state, action, pending] = useActionState(submitLead, initial);
   const hasLiveServices = services.length > 0;
-  const selected = services.find((service) => service.slug === selectedSlug);
   const availableServices = useMemo(
     () => (hasLiveServices ? services.map((service) => ({ id: service.id, name: service.name, slug: service.slug })) : previewServices),
     [hasLiveServices, services],
   );
+  const selected = availableServices.find((service) => service.slug === selectedSlug);
   const [selectedValue, setSelectedValue] = useState(selected ? selected.id : "");
   const activeService = selected ?? availableServices.find((service) => service.id === selectedValue || service.slug === selectedValue);
   const activePrompt = servicePrompt(activeService?.slug);

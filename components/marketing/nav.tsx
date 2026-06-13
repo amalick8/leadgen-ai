@@ -5,7 +5,12 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/70 bg-white/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/services" className="text-lg font-black tracking-tight text-slate-950">LeadFlow <span className="text-indigo-600">AI</span></Link>
+        <Link
+          href="/#lead-form"
+          className="rounded-md text-lg font-black tracking-tight text-slate-950 transition duration-300 ease-out hover:-translate-y-0.5 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100 active:translate-y-0 active:scale-95"
+        >
+          LeadFlow <span className="text-indigo-600">AI</span>
+        </Link>
         <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-600 md:flex">
           <Link href="/services">Services</Link>
           <Link href="/contractors">Contractors</Link>
